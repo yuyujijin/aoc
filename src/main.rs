@@ -12,7 +12,7 @@ struct Cli {
     day: f32,
 }
 
-fn get_day_solver(day: i32) -> fn(i32) -> String {
+fn get_day_solver(day: i32) -> fn(i32) -> i32 {
     match day {
         1 => day01::solve,
         _ => unimplemented!(),
@@ -35,10 +35,10 @@ fn main() {
     }
 
     // Retrieve the request day
-    let problem: fn(i32) -> String = get_day_solver(day);
+    let problem: fn(i32) -> i32 = get_day_solver(day);
 
     // Compute the solution
-    let solution: String = problem(part);
+    let solution: i32 = problem(part);
 
     // Retrieve time
     let end: Instant = Instant::now();

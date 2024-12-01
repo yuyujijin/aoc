@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::iter::zip;
 use std::path::Path;
 
 // The output is wrapped in a Result to allow matching on errors.
@@ -12,23 +13,26 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1() -> String {
-    let lines = read_lines("inputs/dayn-1.txt").unwrap();
-    for line in lines {
+fn part1() -> i32 {
+    if let Ok(lines) = read_lines("inputs/dayn-1.txt") {
         // Do something...
+    } else {
+        return -1;
     }
-    return String::from("part1");
+    return distances;
 }
 
-fn part2() -> String {
-    let lines = read_lines("inputs/dayn-1.txt").unwrap();
-    for line in lines {
+fn part2() -> i32 {
+    let mut distances: i32 = 0;
+    if let Ok(lines) = read_lines("inputs/dayn-2.txt") {
         // Do something...
+    } else {
+        return -1;
     }
-    return String::from("part1");
+    return -1;
 }
 
-pub fn solve(part: i32) -> String {
+pub fn solve(part: i32) -> i32 {
     match part {
         1 => part1(),
         2 => part2(),
