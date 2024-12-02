@@ -3,6 +3,8 @@ use std::io::{self, BufRead};
 use std::iter::zip;
 use std::path::Path;
 
+static INPUT_FILE_PATH: &str = "inputs/dayn.txt";
+
 // The output is wrapped in a Result to allow matching on errors.
 // Returns an Iterator to the Reader of the lines of the file.
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -13,8 +15,8 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1() -> i32 {
-    if let Ok(lines) = read_lines("inputs/dayn-1.txt") {
+fn part1(path: &str) -> i32 {
+    if let Ok(lines) = read_lines(path) {
         // Do something...
     } else {
         return -1;
@@ -22,9 +24,9 @@ fn part1() -> i32 {
     return distances;
 }
 
-fn part2() -> i32 {
+fn part2(path: &str) -> i32 {
     let mut distances: i32 = 0;
-    if let Ok(lines) = read_lines("inputs/dayn-2.txt") {
+    if let Ok(lines) = read_lines(path) {
         // Do something...
     } else {
         return -1;
@@ -34,8 +36,29 @@ fn part2() -> i32 {
 
 pub fn solve(part: i32) -> i32 {
     match part {
-        1 => part1(),
-        2 => part2(),
+        1 => part1(INPUT_FILE_PATH),
+        2 => part2(INPUT_FILE_PATH),
         _ => unimplemented!(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static EXAMPLE_FILE_PATH: &str = "inputs/dayn.example.txt";
+
+    #[test]
+    fn example_1() {
+        let result = part1(EXAMPLE_FILE_PATH);
+        let expected: i32 = -1;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn example_2() {
+        let result = part2(EXAMPLE_FILE_PATH);
+        let expected: i32 = -1;
+        assert_eq!(result, expected);
     }
 }
