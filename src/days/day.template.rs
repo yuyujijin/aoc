@@ -21,7 +21,7 @@ fn part1(path: &str) -> i32 {
     } else {
         return -1;
     }
-    return distances;
+    return -1;
 }
 
 fn part2(path: &str) -> i32 {

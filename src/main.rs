@@ -1,7 +1,7 @@
 mod days;
 use std::time::Instant;
 
-use days::{day01, day02};
+use days::{day01, day02, day03};
 
 use clap::Parser;
 
@@ -16,6 +16,7 @@ fn get_day_solver(day: i32) -> fn(i32) -> i32 {
     match day {
         1 => day01::solve,
         2 => day02::solve,
+        3 => day03::solve,
         _ => unimplemented!(),
     }
 }
