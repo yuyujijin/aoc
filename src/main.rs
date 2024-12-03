@@ -1,7 +1,7 @@
 mod days;
 use std::time::Instant;
 
-use days::day01;
+use days::{day01, day02};
 
 use clap::Parser;
 
@@ -15,6 +15,7 @@ struct Cli {
 fn get_day_solver(day: i32) -> fn(i32) -> i32 {
     match day {
         1 => day01::solve,
+        2 => day02::solve,
         _ => unimplemented!(),
     }
 }
@@ -37,15 +38,13 @@ fn main() {
     // Retrieve the request day
     let problem: fn(i32) -> i32 = get_day_solver(day);
 
+    // Retrieve time
+    let start: Instant = Instant::now();
+
     // Compute the solution
     let solution: i32 = problem(part);
 
-    // Retrieve time
-    let end: Instant = Instant::now();
-
-    let elapsed_ms: f64 = (end).elapsed().as_nanos() as f64 / 1_000_000.0;
-
     println!("Solution found: {}", solution);
 
-    println!("Problem solved in {}ms", elapsed_ms)
+    println!("Problem solved in {:.4?}s", start.elapsed().as_secs_f64())
 }

@@ -25,7 +25,6 @@ fn part1(path: &str) -> i32 {
 }
 
 fn part2(path: &str) -> i32 {
-    let mut distances: i32 = 0;
     if let Ok(lines) = read_lines(path) {
         // Do something...
     } else {
