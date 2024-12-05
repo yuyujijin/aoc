@@ -142,7 +142,7 @@ mod tests {
     #[test]
     fn example_2() {
         let result = part2(EXAMPLE_FILE_PATH);
-        let expected: i32 = -1;
+        let expected: i32 = 9;
         assert_eq!(result, expected);
     }
 }
