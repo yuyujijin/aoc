@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::{self, BufRead};
-use std::iter::zip;
 use std::path::Path;
 
 static INPUT_FILE_PATH: &str = "inputs/dayn.txt";
