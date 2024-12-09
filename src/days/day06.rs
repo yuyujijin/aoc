@@ -1,9 +1,10 @@
+use colored::Colorize;
 use std::collections::HashSet;
-use std::fmt;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::{fmt, thread};
 
 static INPUT_FILE_PATH: &str = "inputs/day06.txt";
 
@@ -96,7 +97,9 @@ fn part2(path: &str) -> i32 {
         // Fake insert `start_pos` (can't be a valid stone position)
         stones.insert((start_pos.0, start_pos.1));
 
-        return find_loops(&matrix, start_pos, start_dir.unwrap(), &mut stones)
+        let start = (start_pos.0, start_pos.1, start_dir.unwrap());
+
+        return find_loops(&matrix, start, &mut stones, start)
             .try_into()
             .unwrap();
     }
@@ -221,11 +224,10 @@ fn set_stone(matrix: &Vec<Vec<char>>, pos: (usize, usize)) -> Vec<Vec<char>> {
 
 fn is_loop(
     matrix: &Vec<Vec<char>>,
-    pos: (usize, usize),
-    dir: Direction,
+    guard: (usize, usize, Direction),
     mut visited: &mut HashSet<(usize, usize, Direction)>,
 ) -> bool {
-    let (x, y): (usize, usize) = pos;
+    let (x, y, dir): (usize, usize, Direction) = guard;
 
     let width: usize = matrix.get(0).unwrap().len();
     let height: usize = matrix.len();
@@ -236,7 +238,7 @@ fn is_loop(
             for i in (1..y + 1).rev() {
                 match matrix.get(i - 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return is_loop(&matrix, (x, i), Direction::Right, &mut visited);
+                        return is_loop(&matrix, (x, i, Direction::Right), &mut visited);
                     }
                     _ => match visited.get(&(x, i, dir)) {
                         Some(_) => {
@@ -253,7 +255,7 @@ fn is_loop(
             // Walk until you can't no more
             for i in x..width - 1 {
                 match matrix.get(y).unwrap().get(i + 1).unwrap() {
-                    '#' => return is_loop(&matrix, (i, y), Direction::Bottom, &mut visited),
+                    '#' => return is_loop(&matrix, (i, y, Direction::Bottom), &mut visited),
                     _ => match visited.get(&(i, y, dir)) {
                         Some(_) => {
                             return true;
@@ -269,7 +271,7 @@ fn is_loop(
             // Walk until you can't no more
             for i in y..height - 1 {
                 match matrix.get(i + 1).unwrap().get(x).unwrap() {
-                    '#' => return is_loop(&matrix, (x, i), Direction::Left, &mut visited),
+                    '#' => return is_loop(&matrix, (x, i, Direction::Left), &mut visited),
                     _ => match visited.get(&(x, i, dir)) {
                         Some(_) => {
                             return true;
@@ -285,7 +287,7 @@ fn is_loop(
             // Walk until you can't no more
             for i in (1..x + 1).rev() {
                 match matrix.get(y).unwrap().get(i - 1).unwrap() {
-                    '#' => return is_loop(&matrix, (i, y), Direction::Top, &mut visited),
+                    '#' => return is_loop(&matrix, (i, y, Direction::Top), &mut visited),
                     _ => match visited.get(&(i, y, dir)) {
                         Some(_) => {
                             return true;
@@ -303,14 +305,14 @@ fn is_loop(
 
 fn find_loops(
     matrix: &Vec<Vec<char>>,
-    pos: (usize, usize),
-    dir: Direction,
+    guard: (usize, usize, Direction),
     mut stones: &mut HashSet<(usize, usize)>,
+    start: (usize, usize, Direction),
 ) -> usize {
     //
     let mut count: usize = 0;
     //
-    let (x, y): (usize, usize) = pos;
+    let (x, y, dir): (usize, usize, Direction) = guard;
 
     let width: usize = matrix.get(0).unwrap().len();
     let height: usize = matrix.len();
@@ -320,17 +322,11 @@ fn find_loops(
             for i in (1..y + 1).rev() {
                 match matrix.get(i - 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count + find_loops(&matrix, (x, i), Direction::Right, &mut stones)
+                        return count
+                            + find_loops(&matrix, (x, i, Direction::Right), &mut stones, start)
                     }
                     _ => {
-                        if !stones.contains(&(x, i - 1))
-                            && is_loop(
-                                &set_stone(&matrix, (x, i - 1)),
-                                (x, i),
-                                dir,
-                                &mut HashSet::<(usize, usize, Direction)>::new(),
-                            )
-                        {
+                        if !stones.contains(&(x, i - 1)) && true {
                             stones.insert((x, i - 1));
                             count += 1;
                         }
@@ -345,14 +341,14 @@ fn find_loops(
             for i in x..width - 1 {
                 match matrix.get(y).unwrap().get(i + 1).unwrap() {
                     '#' => {
-                        return count + find_loops(&matrix, (i, y), Direction::Bottom, &mut stones)
+                        return count
+                            + find_loops(&matrix, (i, y, Direction::Bottom), &mut stones, start)
                     }
                     _ => {
                         if !stones.contains(&(i + 1, y))
                             && is_loop(
                                 &set_stone(&matrix, (i + 1, y)),
-                                (i, y),
-                                dir,
+                                start,
                                 &mut HashSet::<(usize, usize, Direction)>::new(),
                             )
                         {
@@ -370,14 +366,14 @@ fn find_loops(
             for i in y..height - 1 {
                 match matrix.get(i + 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count + find_loops(&matrix, (x, i), Direction::Left, &mut stones)
+                        return count
+                            + find_loops(&matrix, (x, i, Direction::Left), &mut stones, start)
                     }
                     _ => {
                         if !stones.contains(&(x, i + 1))
                             && is_loop(
                                 &set_stone(&matrix, (x, i + 1)),
-                                (x, i),
-                                dir,
+                                start,
                                 &mut HashSet::<(usize, usize, Direction)>::new(),
                             )
                         {
@@ -394,13 +390,15 @@ fn find_loops(
             // Walk until you can't no more
             for i in (1..x + 1).rev() {
                 match matrix.get(y).unwrap().get(i - 1).unwrap() {
-                    '#' => return count + find_loops(&matrix, (i, y), Direction::Top, &mut stones),
+                    '#' => {
+                        return count
+                            + find_loops(&matrix, (i, y, Direction::Top), &mut stones, start)
+                    }
                     _ => {
                         if !stones.contains(&(i - 1, y))
                             && is_loop(
                                 &set_stone(&matrix, (i - 1, y)),
-                                (i, y),
-                                dir,
+                                start,
                                 &mut HashSet::<(usize, usize, Direction)>::new(),
                             )
                         {
