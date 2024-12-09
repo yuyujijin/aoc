@@ -91,11 +91,12 @@ fn part2(path: &str) -> i32 {
                 }
             }
         }
-        let mut visited: HashSet<(usize, usize, Direction)> =
-            HashSet::<(usize, usize, Direction)>::new();
-        let dir = start_dir.unwrap();
-        visited.insert((start_pos.1, start_pos.0, dir));
-        return find_loops(&matrix, start_pos, dir, &mut visited)
+        let mut stones: HashSet<(usize, usize)> = HashSet::<(usize, usize)>::new();
+
+        // Fake insert `start_pos` (can't be a valid stone position)
+        stones.insert((start_pos.0, start_pos.1));
+
+        return find_loops(&matrix, start_pos, start_dir.unwrap(), &mut stones)
             .try_into()
             .unwrap();
     }
@@ -210,50 +211,129 @@ fn find_path(
     }
 }
 
-fn find_loops(
+fn set_stone(matrix: &Vec<Vec<char>>, pos: (usize, usize)) -> Vec<Vec<char>> {
+    let (x, y) = pos;
+    let mut cloned: Vec<Vec<char>> = matrix.clone();
+    // Modify (x, y) as '#'
+    *cloned.get_mut(y).unwrap().get_mut(x).unwrap() = '#';
+    return cloned;
+}
+
+fn is_loop(
     matrix: &Vec<Vec<char>>,
     pos: (usize, usize),
     dir: Direction,
     mut visited: &mut HashSet<(usize, usize, Direction)>,
+) -> bool {
+    let (x, y): (usize, usize) = pos;
+
+    let width: usize = matrix.get(0).unwrap().len();
+    let height: usize = matrix.len();
+
+    match dir {
+        Direction::Top => {
+            // Walk until you can't no more
+            for i in (1..y + 1).rev() {
+                match matrix.get(i - 1).unwrap().get(x).unwrap() {
+                    '#' => {
+                        return is_loop(&matrix, (x, i), Direction::Right, &mut visited);
+                    }
+                    _ => match visited.get(&(x, i, dir)) {
+                        Some(_) => {
+                            return true;
+                        }
+                        _ => {
+                            visited.insert((x, i, dir));
+                        }
+                    },
+                }
+            }
+        }
+        Direction::Right => {
+            // Walk until you can't no more
+            for i in x..width - 1 {
+                match matrix.get(y).unwrap().get(i + 1).unwrap() {
+                    '#' => return is_loop(&matrix, (i, y), Direction::Bottom, &mut visited),
+                    _ => match visited.get(&(i, y, dir)) {
+                        Some(_) => {
+                            return true;
+                        }
+                        _ => {
+                            visited.insert((i, y, dir));
+                        }
+                    },
+                }
+            }
+        }
+        Direction::Bottom => {
+            // Walk until you can't no more
+            for i in y..height - 1 {
+                match matrix.get(i + 1).unwrap().get(x).unwrap() {
+                    '#' => return is_loop(&matrix, (x, i), Direction::Left, &mut visited),
+                    _ => match visited.get(&(x, i, dir)) {
+                        Some(_) => {
+                            return true;
+                        }
+                        _ => {
+                            visited.insert((x, i, dir));
+                        }
+                    },
+                }
+            }
+        }
+        Direction::Left => {
+            // Walk until you can't no more
+            for i in (1..x + 1).rev() {
+                match matrix.get(y).unwrap().get(i - 1).unwrap() {
+                    '#' => return is_loop(&matrix, (i, y), Direction::Top, &mut visited),
+                    _ => match visited.get(&(i, y, dir)) {
+                        Some(_) => {
+                            return true;
+                        }
+                        _ => {
+                            visited.insert((i, y, dir));
+                        }
+                    },
+                }
+            }
+        }
+    }
+    return false;
+}
+
+fn find_loops(
+    matrix: &Vec<Vec<char>>,
+    pos: (usize, usize),
+    dir: Direction,
+    mut stones: &mut HashSet<(usize, usize)>,
 ) -> usize {
     //
     let mut count: usize = 0;
     //
     let (x, y): (usize, usize) = pos;
-    visited.insert((x, y, dir));
-
-    // println!(
-    // "{}",
-    // &visited
-    // .iter()
-    // .map(|(x, y, dir)| format!("({}, {}, {})", x, y, dir))
-    // .reduce(|a, b| a + "," + &b)
-    // .unwrap()
-    // );
 
     let width: usize = matrix.get(0).unwrap().len();
     let height: usize = matrix.len();
     match dir {
         Direction::Top => {
             // Walk until you can't no more
-            for i in (0..y).rev() {
-                match matrix.get(i).unwrap().get(x).unwrap() {
+            for i in (1..y + 1).rev() {
+                match matrix.get(i - 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (x, i + 1), Direction::Right, &mut visited)
+                        return count + find_loops(&matrix, (x, i), Direction::Right, &mut stones)
                     }
-                    // Visited +90°
                     _ => {
-                        println!("({}, {}), {}", x, i, dir);
-                        match visited.get(&(x, i, Direction::Right)) {
-                            // This is a valid boulder place
-                            Some(_) => {
-                                println!("({}, {}) {} already visited !", x, i, Direction::Right);
-                                count += 1;
-                            }
-                            _ => (),
+                        if !stones.contains(&(x, i - 1))
+                            && is_loop(
+                                &set_stone(&matrix, (x, i - 1)),
+                                (x, i),
+                                dir,
+                                &mut HashSet::<(usize, usize, Direction)>::new(),
+                            )
+                        {
+                            stones.insert((x, i - 1));
+                            count += 1;
                         }
-                        visited.insert((x, i, dir));
                     }
                 }
             }
@@ -262,24 +342,23 @@ fn find_loops(
         }
         Direction::Right => {
             // Walk until you can't no more
-            for i in x..width {
-                match matrix.get(y).unwrap().get(i).unwrap() {
+            for i in x..width - 1 {
+                match matrix.get(y).unwrap().get(i + 1).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (i - 1, y), Direction::Bottom, &mut visited)
+                        return count + find_loops(&matrix, (i, y), Direction::Bottom, &mut stones)
                     }
-                    // Visited +90°
                     _ => {
-                        println!("({}, {}), {}", i, y, dir);
-                        match visited.get(&(i, y, Direction::Bottom)) {
-                            // This is a valid boulder place
-                            Some(_) => {
-                                println!("({}, {}) {} already visited !", i, y, Direction::Bottom);
-                                count += 1;
-                            }
-                            _ => (),
-                        };
-                        visited.insert((i, y, dir));
+                        if !stones.contains(&(i + 1, y))
+                            && is_loop(
+                                &set_stone(&matrix, (i + 1, y)),
+                                (i, y),
+                                dir,
+                                &mut HashSet::<(usize, usize, Direction)>::new(),
+                            )
+                        {
+                            stones.insert((i + 1, y));
+                            count += 1;
+                        }
                     }
                 }
             }
@@ -288,24 +367,23 @@ fn find_loops(
         }
         Direction::Bottom => {
             // Walk until you can't no more
-            for i in y..height {
-                match matrix.get(i).unwrap().get(x).unwrap() {
+            for i in y..height - 1 {
+                match matrix.get(i + 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (x, i - 1), Direction::Left, &mut visited)
+                        return count + find_loops(&matrix, (x, i), Direction::Left, &mut stones)
                     }
-                    // Visited +90°
                     _ => {
-                        println!("({}, {}), {}", x, i, dir);
-                        match visited.get(&(x, i, Direction::Left)) {
-                            // This is a valid boulder place
-                            Some(_) => {
-                                println!("({}, {}) {} already visited !", x, i, Direction::Left);
-                                count += 1;
-                            }
-                            _ => (),
-                        };
-                        visited.insert((x, i, dir));
+                        if !stones.contains(&(x, i + 1))
+                            && is_loop(
+                                &set_stone(&matrix, (x, i + 1)),
+                                (x, i),
+                                dir,
+                                &mut HashSet::<(usize, usize, Direction)>::new(),
+                            )
+                        {
+                            stones.insert((x, i + 1));
+                            count += 1;
+                        }
                     }
                 }
             }
@@ -314,24 +392,21 @@ fn find_loops(
         }
         Direction::Left => {
             // Walk until you can't no more
-            for i in (0..x).rev() {
-                match matrix.get(y).unwrap().get(i).unwrap() {
-                    '#' => {
-                        return count
-                            + find_loops(&matrix, (i + 1, y), Direction::Top, &mut visited)
-                    }
-                    // Visited +90°
+            for i in (1..x + 1).rev() {
+                match matrix.get(y).unwrap().get(i - 1).unwrap() {
+                    '#' => return count + find_loops(&matrix, (i, y), Direction::Top, &mut stones),
                     _ => {
-                        println!("({}, {}), {}", i, y, dir);
-                        match visited.get(&(i, y, Direction::Top)) {
-                            // This is a valid boulder place
-                            Some(_) => {
-                                println!("({}, {}) {} already visited !", i, y, Direction::Top);
-                                count += 1;
-                            }
-                            _ => (),
-                        };
-                        visited.insert((i, y, dir));
+                        if !stones.contains(&(i - 1, y))
+                            && is_loop(
+                                &set_stone(&matrix, (i - 1, y)),
+                                (i, y),
+                                dir,
+                                &mut HashSet::<(usize, usize, Direction)>::new(),
+                            )
+                        {
+                            stones.insert((i - 1, y));
+                            count += 1;
+                        }
                     }
                 }
             }
