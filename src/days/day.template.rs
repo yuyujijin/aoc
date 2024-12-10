@@ -14,7 +14,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1(path: &str) -> i32 {
+fn part1(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         // Do something...
     } else {
@@ -23,7 +23,7 @@ fn part1(path: &str) -> i32 {
     return -1;
 }
 
-fn part2(path: &str) -> i32 {
+fn part2(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         // Do something...
     } else {
@@ -32,7 +32,7 @@ fn part2(path: &str) -> i32 {
     return -1;
 }
 
-pub fn solve(part: i32) -> i32 {
+pub fn solve(part: i64) -> i64 {
     match part {
         1 => part1(INPUT_FILE_PATH),
         2 => part2(INPUT_FILE_PATH),
@@ -49,14 +49,14 @@ mod tests {
     #[test]
     fn example_1() {
         let result = part1(EXAMPLE_FILE_PATH);
-        let expected: i32 = -1;
+        let expected: i64 = -1;
         assert_eq!(result, expected);
     }
 
     #[test]
     fn example_2() {
         let result = part2(EXAMPLE_FILE_PATH);
-        let expected: i32 = -1;
+        let expected: i64 = -1;
         assert_eq!(result, expected);
     }
 }

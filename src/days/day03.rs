@@ -15,7 +15,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1(path: &str) -> i32 {
+fn part1(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         return lines
             .flatten()
@@ -27,7 +27,7 @@ fn part1(path: &str) -> i32 {
     return -1;
 }
 
-fn part2(path: &str) -> i32 {
+fn part2(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         let full_line = lines
             .flatten()
@@ -39,7 +39,7 @@ fn part2(path: &str) -> i32 {
     return -1;
 }
 
-pub fn solve(part: i32) -> i32 {
+pub fn solve(part: i64) -> i64 {
     match part {
         1 => part1(INPUT_FILE_PATH),
         2 => part2(INPUT_FILE_PATH),
@@ -47,29 +47,29 @@ pub fn solve(part: i32) -> i32 {
     }
 }
 
-fn compute(instructions: &str) -> i32 {
+fn compute(instructions: &str) -> i64 {
     let re: Regex = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap();
     re
         // Iterate throuh captures
         .captures_iter(&instructions)
-        // Map on first and second group multiplication (as i32)
+        // Map on first and second group multiplication (as i64)
         .map(|m| {
             let (_, [left, right]) = m.extract();
-            left.parse::<i32>().unwrap() * right.parse::<i32>().unwrap()
+            left.parse::<i64>().unwrap() * right.parse::<i64>().unwrap()
         })
         // Reduce the array by adding every elts
         .reduce(|x, acc| x + acc)
         .unwrap()
 }
 
-fn compute_do(instruction: &str) -> i32 {
+fn compute_do(instruction: &str) -> i64 {
     // Catch smallest `(begging OR "do()") anything (don't() OR end)` group
     // Those represents valid groups
     let re: Regex = Regex::new(r"(?:^|do\(\))(.*?)(?:don't\(\)|$)").unwrap();
     re
         // Iterate throuh captures
         .captures_iter(&instruction)
-        // Map on first and second group multiplication (as i32)
+        // Map on first and second group multiplication (as i64)
         .map(|m| {
             let (_, [instructions]) = m.extract();
             compute(&instructions)
@@ -88,14 +88,14 @@ mod tests {
     #[test]
     fn example_1() {
         let result = part1(EXAMPLE_FILE_PATH);
-        let expected: i32 = 161;
+        let expected: i64 = 161;
         assert_eq!(result, expected);
     }
 
     #[test]
     fn example_2() {
         let result = part2("inputs/day03.02.example.txt");
-        let expected: i32 = 48;
+        let expected: i64 = 48;
         assert_eq!(result, expected);
     }
 }

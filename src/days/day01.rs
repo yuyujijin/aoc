@@ -16,17 +16,17 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1(path: &str) -> i32 {
-    let mut distances: i32 = 0;
+fn part1(path: &str) -> i64 {
+    let mut distances: i64 = 0;
     if let Ok(lines) = read_lines(path) {
-        let mut left_list: Vec<i32> = Vec::new();
-        let mut right_list: Vec<i32> = Vec::new();
+        let mut left_list: Vec<i64> = Vec::new();
+        let mut right_list: Vec<i64> = Vec::new();
         // Retrieve columns
         for line in lines.flatten() {
             let splitted: Vec<&str> = line.split_whitespace().collect();
-            let [left, right]: [i32; 2] = [
-                splitted.get(0).unwrap().parse::<i32>().unwrap(),
-                splitted.get(1).unwrap().parse::<i32>().unwrap(),
+            let [left, right]: [i64; 2] = [
+                splitted.get(0).unwrap().parse::<i64>().unwrap(),
+                splitted.get(1).unwrap().parse::<i64>().unwrap(),
             ];
             left_list.push(left);
             right_list.push(right);
@@ -44,17 +44,17 @@ fn part1(path: &str) -> i32 {
     return distances;
 }
 
-fn part2(path: &str) -> i32 {
-    let mut distances: i32 = 0;
+fn part2(path: &str) -> i64 {
+    let mut distances: i64 = 0;
     if let Ok(lines) = read_lines(path) {
-        let mut left_list: Vec<i32> = Vec::new();
-        let mut right_map: HashMap<i32, i32> = HashMap::new();
+        let mut left_list: Vec<i64> = Vec::new();
+        let mut right_map: HashMap<i64, i64> = HashMap::new();
         // Retrieve columns
         for line in lines.flatten() {
             let splitted: Vec<&str> = line.split_whitespace().collect();
-            let [left, right]: [i32; 2] = [
-                splitted.get(0).unwrap().parse::<i32>().unwrap(),
-                splitted.get(1).unwrap().parse::<i32>().unwrap(),
+            let [left, right]: [i64; 2] = [
+                splitted.get(0).unwrap().parse::<i64>().unwrap(),
+                splitted.get(1).unwrap().parse::<i64>().unwrap(),
             ];
             left_list.push(left);
             // Increase map[key]
@@ -72,12 +72,12 @@ fn part2(path: &str) -> i32 {
     return distances;
 }
 
-fn increase_hash_map(map: &mut HashMap<i32, i32>, key: i32) {
+fn increase_hash_map(map: &mut HashMap<i64, i64>, key: i64) {
     let count = map.entry(key).or_insert(0);
     *count += 1;
 }
 
-pub fn solve(part: i32) -> i32 {
+pub fn solve(part: i64) -> i64 {
     match part {
         1 => part1(INPUT_FILE_PATH),
         2 => part2(INPUT_FILE_PATH),
@@ -94,14 +94,14 @@ mod tests {
     #[test]
     fn example_1() {
         let result = part1(EXAMPLE_FILE_PATH);
-        let expected: i32 = -1;
+        let expected: i64 = -1;
         assert_eq!(result, expected);
     }
 
     #[test]
     fn example_2() {
         let result = part2(EXAMPLE_FILE_PATH);
-        let expected: i32 = -1;
+        let expected: i64 = -1;
         assert_eq!(result, expected);
     }
 }

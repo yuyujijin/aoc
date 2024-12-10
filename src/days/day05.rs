@@ -15,9 +15,9 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn part1(path: &str) -> i32 {
-    let mut count: i32 = 0;
-    let mut map: HashMap<i32, Vec<i32>> = HashMap::<i32, Vec<i32>>::new();
+fn part1(path: &str) -> i64 {
+    let mut count: i64 = 0;
+    let mut map: HashMap<i64, Vec<i64>> = HashMap::<i64, Vec<i64>>::new();
     if let Ok(lines) = read_lines(path) {
         let mut index: usize = 0;
         for line in lines.flatten() {
@@ -29,18 +29,18 @@ fn part1(path: &str) -> i32 {
                         index += 1;
                         continue;
                     }
-                    let numbers: Vec<i32> =
-                        line.split('|').map(|f| f.parse::<i32>().unwrap()).collect();
-                    let (left, right): (i32, i32) =
+                    let numbers: Vec<i64> =
+                        line.split('|').map(|f| f.parse::<i64>().unwrap()).collect();
+                    let (left, right): (i64, i64) =
                         (*numbers.get(0).unwrap(), *numbers.get(1).unwrap());
                     // Greater than
                     map.entry(left).or_insert(Vec::new()).push(right);
                 }
                 // Second block
                 1 => {
-                    let numbers: Vec<i32> =
-                        line.split(',').map(|f| f.parse::<i32>().unwrap()).collect();
-                    let mut copy: Vec<i32> = numbers.clone();
+                    let numbers: Vec<i64> =
+                        line.split(',').map(|f| f.parse::<i64>().unwrap()).collect();
+                    let mut copy: Vec<i64> = numbers.clone();
                     sort_updates(&map, &mut copy);
                     if vec_equals(&numbers, &copy) {
                         count += numbers.get(numbers.len() / 2).unwrap();
@@ -54,9 +54,9 @@ fn part1(path: &str) -> i32 {
     return -1;
 }
 
-fn part2(path: &str) -> i32 {
-    let mut count: i32 = 0;
-    let mut map: HashMap<i32, Vec<i32>> = HashMap::<i32, Vec<i32>>::new();
+fn part2(path: &str) -> i64 {
+    let mut count: i64 = 0;
+    let mut map: HashMap<i64, Vec<i64>> = HashMap::<i64, Vec<i64>>::new();
     if let Ok(lines) = read_lines(path) {
         let mut index: usize = 0;
         for line in lines.flatten() {
@@ -68,18 +68,18 @@ fn part2(path: &str) -> i32 {
                         index += 1;
                         continue;
                     }
-                    let numbers: Vec<i32> =
-                        line.split('|').map(|f| f.parse::<i32>().unwrap()).collect();
-                    let (left, right): (i32, i32) =
+                    let numbers: Vec<i64> =
+                        line.split('|').map(|f| f.parse::<i64>().unwrap()).collect();
+                    let (left, right): (i64, i64) =
                         (*numbers.get(0).unwrap(), *numbers.get(1).unwrap());
                     // Greater than
                     map.entry(left).or_insert(Vec::new()).push(right);
                 }
                 // Second block
                 1 => {
-                    let numbers: Vec<i32> =
-                        line.split(',').map(|f| f.parse::<i32>().unwrap()).collect();
-                    let mut copy: Vec<i32> = numbers.clone();
+                    let numbers: Vec<i64> =
+                        line.split(',').map(|f| f.parse::<i64>().unwrap()).collect();
+                    let mut copy: Vec<i64> = numbers.clone();
                     sort_updates(&map, &mut copy);
                     if !vec_equals(&numbers, &copy) {
                         count += copy.get(numbers.len() / 2).unwrap();
@@ -93,7 +93,7 @@ fn part2(path: &str) -> i32 {
     return -1;
 }
 
-pub fn solve(part: i32) -> i32 {
+pub fn solve(part: i64) -> i64 {
     match part {
         1 => part1(INPUT_FILE_PATH),
         2 => part2(INPUT_FILE_PATH),
@@ -101,7 +101,7 @@ pub fn solve(part: i32) -> i32 {
     }
 }
 
-fn compare(map: &HashMap<i32, Vec<i32>>, a: &i32, b: &i32) -> std::cmp::Ordering {
+fn compare(map: &HashMap<i64, Vec<i64>>, a: &i64, b: &i64) -> std::cmp::Ordering {
     match map.get(a) {
         Some(l) => {
             if !l.contains(b) {
@@ -113,16 +113,16 @@ fn compare(map: &HashMap<i32, Vec<i32>>, a: &i32, b: &i32) -> std::cmp::Ordering
     return std::cmp::Ordering::Less;
 }
 
-fn sort_updates(map: &HashMap<i32, Vec<i32>>, numbers: &mut Vec<i32>) {
+fn sort_updates(map: &HashMap<i64, Vec<i64>>, numbers: &mut Vec<i64>) {
     numbers.sort_by(|a, b| compare(map, a, b));
 }
 
-fn vec_equals(left: &Vec<i32>, right: &Vec<i32>) -> bool {
+fn vec_equals(left: &Vec<i64>, right: &Vec<i64>) -> bool {
     if left.len() != right.len() {
         return false;
     }
     for i in 0..left.len() {
-        let (a, b): (&i32, &i32) = (left.get(i).unwrap(), right.get(i).unwrap());
+        let (a, b): (&i64, &i64) = (left.get(i).unwrap(), right.get(i).unwrap());
         if a != b {
             return false;
         }
@@ -139,14 +139,14 @@ mod tests {
     #[test]
     fn example_1() {
         let result = part1(EXAMPLE_FILE_PATH);
-        let expected: i32 = 143;
+        let expected: i64 = 143;
         assert_eq!(result, expected);
     }
 
     #[test]
     fn example_2() {
         let result = part2(EXAMPLE_FILE_PATH);
-        let expected: i32 = 123;
+        let expected: i64 = 123;
         assert_eq!(result, expected);
     }
 }

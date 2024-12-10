@@ -14,21 +14,21 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn vec_without(vec: &Vec<i32>, idx: usize) -> Vec<i32> {
+fn vec_without(vec: &Vec<i64>, idx: usize) -> Vec<i64> {
     if idx > vec.len() {
-        return Vec::<i32>::new();
+        return Vec::<i64>::new();
     }
     return [&vec[0..idx], &vec[idx + 1..]].concat().to_vec();
 }
 
-fn part1(path: &str) -> i32 {
-    let mut counter: i32 = 0;
+fn part1(path: &str) -> i64 {
+    let mut counter: i64 = 0;
     if let Ok(lines) = read_lines(path) {
         for line in lines.flatten() {
             // Parse the line
-            let splitted: Vec<i32> = line
+            let splitted: Vec<i64> = line
                 .split_whitespace()
-                .map(|f| f.parse::<i32>().unwrap())
+                .map(|f| f.parse::<i64>().unwrap())
                 .collect();
             // Iterate through the lines
             if is_safe(&splitted, None) {
@@ -41,14 +41,14 @@ fn part1(path: &str) -> i32 {
     return counter;
 }
 
-fn part2(path: &str) -> i32 {
-    let mut counter: i32 = 0;
+fn part2(path: &str) -> i64 {
+    let mut counter: i64 = 0;
     if let Ok(lines) = read_lines(path) {
         for line in lines.flatten() {
             // Parse the line
-            let splitted: Vec<i32> = line
+            let splitted: Vec<i64> = line
                 .split_whitespace()
-                .map(|f| f.parse::<i32>().unwrap())
+                .map(|f| f.parse::<i64>().unwrap())
                 .collect();
             // * Check if safe dampenered
             match is_safe_dampenered(&splitted)
@@ -67,7 +67,7 @@ fn part2(path: &str) -> i32 {
     return counter;
 }
 
-pub fn solve(part: i32) -> i32 {
+pub fn solve(part: i64) -> i64 {
     match part {
         1 => part1(INPUT_FILE_PATH),
         2 => part2(INPUT_FILE_PATH),
@@ -75,9 +75,9 @@ pub fn solve(part: i32) -> i32 {
     }
 }
 
-fn is_safe(elems: &Vec<i32>, compare: Option<fn(i32, i32) -> bool>) -> bool {
+fn is_safe(elems: &Vec<i64>, compare: Option<fn(i64, i64) -> bool>) -> bool {
     let n: usize = elems.len();
-    static DELTA_MAX: i32 = 3;
+    static DELTA_MAX: i64 = 3;
 
     if n < 2 {
         return true;
@@ -85,13 +85,13 @@ fn is_safe(elems: &Vec<i32>, compare: Option<fn(i32, i32) -> bool>) -> bool {
 
     let [first, second] = [elems.get(0).unwrap(), elems.get(1).unwrap()];
 
-    let compare: fn(i32, i32) -> bool = match compare {
+    let compare: fn(i64, i64) -> bool = match compare {
         Some(f) => f,
         _ => {
             if first < second {
-                |a: i32, b: i32| a < b && (a - b).abs() <= DELTA_MAX
+                |a: i64, b: i64| a < b && (a - b).abs() <= DELTA_MAX
             } else {
-                |a: i32, b: i32| a > b && (a - b).abs() <= DELTA_MAX
+                |a: i64, b: i64| a > b && (a - b).abs() <= DELTA_MAX
             }
         }
     };
@@ -103,9 +103,9 @@ fn is_safe(elems: &Vec<i32>, compare: Option<fn(i32, i32) -> bool>) -> bool {
     return is_safe(&elems[1..].to_vec(), Some(compare));
 }
 
-fn is_safe_dampenered(elems: &Vec<i32>) -> bool {
+fn is_safe_dampenered(elems: &Vec<i64>) -> bool {
     let size: usize = elems.len();
-    static DELTA_MAX: i32 = 3;
+    static DELTA_MAX: i64 = 3;
 
     if size < 2 {
         return true;
@@ -113,15 +113,15 @@ fn is_safe_dampenered(elems: &Vec<i32>) -> bool {
 
     let [first, second] = [elems.get(0).unwrap(), elems.get(1).unwrap()];
 
-    let compare: fn(i32, i32) -> bool = if first < second {
-        |a: i32, b: i32| a < b && (a - b).abs() <= DELTA_MAX
+    let compare: fn(i64, i64) -> bool = if first < second {
+        |a: i64, b: i64| a < b && (a - b).abs() <= DELTA_MAX
     } else {
-        |a: i32, b: i32| a > b && (a - b).abs() <= DELTA_MAX
+        |a: i64, b: i64| a > b && (a - b).abs() <= DELTA_MAX
     };
 
     let mut i: usize = 0;
     while i < size - 1 {
-        let [n, m]: [i32; 2] = [*elems.get(i).unwrap(), *elems.get(i + 1).unwrap()];
+        let [n, m]: [i64; 2] = [*elems.get(i).unwrap(), *elems.get(i + 1).unwrap()];
         if !compare(n, m) {
             return is_safe(&vec_without(elems, i), None)
                 || is_safe(&vec_without(elems, i + 1), None);
@@ -140,14 +140,14 @@ mod tests {
     #[test]
     fn example_1() {
         let result = part1(EXAMPLE_FILE_PATH);
-        let expected: i32 = 2;
+        let expected: i64 = 2;
         assert_eq!(result, expected);
     }
 
     #[test]
     fn example_2() {
         let result = part2(EXAMPLE_FILE_PATH);
-        let expected: i32 = 4;
+        let expected: i64 = 4;
         assert_eq!(result, expected);
     }
 }

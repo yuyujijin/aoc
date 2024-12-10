@@ -1,7 +1,7 @@
 mod days;
 use std::time::Instant;
 
-use days::{day01, day02, day03, day04, day05, day06};
+use days::{day01, day02, day03, day04, day05, day06, day07};
 
 use clap::Parser;
 
@@ -12,7 +12,7 @@ struct Cli {
     days: Vec<f32>,
 }
 
-fn get_day_solver(day: i32) -> fn(i32) -> i32 {
+fn get_day_solver(day: i64) -> fn(i64) -> i64 {
     match day {
         1 => day01::solve,
         2 => day02::solve,
@@ -20,6 +20,7 @@ fn get_day_solver(day: i32) -> fn(i32) -> i32 {
         4 => day04::solve,
         5 => day05::solve,
         6 => day06::solve,
+        7 => day07::solve,
         _ => unimplemented!(),
     }
 }
@@ -31,20 +32,20 @@ fn main() {
         println!("# Solving day #{}...", day);
 
         // Retrieve day and part
-        let [day, part] = [day.trunc() as i32, (day.fract() * 10.0).round() as i32];
+        let [day, part] = [day.trunc() as i64, (day.fract() * 10.0).round() as i64];
 
         if part < 0 || part > 2 {
             panic!(" * Incorrect part value ({}). Must be 1 or 2.", part)
         }
 
         // Retrieve the request day
-        let problem: fn(i32) -> i32 = get_day_solver(day);
+        let problem: fn(i64) -> i64 = get_day_solver(day);
 
         // Retrieve time
         let start: Instant = Instant::now();
 
         // Compute the solution
-        let solution: i32 = problem(part);
+        let solution: i64 = problem(part);
 
         println!(" * Solution found: {}", solution);
 
