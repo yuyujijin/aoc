@@ -4,6 +4,7 @@ use std::fs::File;
 use std::hash::Hash;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::{fmt, thread};
 
 static INPUT_FILE_PATH: &str = "inputs/day06.txt";
@@ -99,8 +100,22 @@ fn part2(path: &str) -> i32 {
 
         let start = (start_pos.0, start_pos.1, start_dir.unwrap());
 
-        return find_loops(&matrix, start, &mut stones, start)
-            .try_into()
+        let (tx, rx): (Sender<bool>, Receiver<bool>) = mpsc::channel();
+
+        find_loops(&matrix, start, &mut stones, start, &tx);
+
+        drop(tx);
+
+        return rx
+            .iter()
+            .map(|x| {
+                if x {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            })
+            .reduce(|prev, next| prev + next)
             .unwrap();
     }
     return -1;
@@ -308,108 +323,134 @@ fn find_loops(
     guard: (usize, usize, Direction),
     mut stones: &mut HashSet<(usize, usize)>,
     start: (usize, usize, Direction),
-) -> usize {
-    //
-    let mut count: usize = 0;
-    //
+    tx: &Sender<bool>,
+) {
     let (x, y, dir): (usize, usize, Direction) = guard;
 
     let width: usize = matrix.get(0).unwrap().len();
     let height: usize = matrix.len();
+
     match dir {
         Direction::Top => {
             // Walk until you can't no more
             for i in (1..y + 1).rev() {
                 match matrix.get(i - 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (x, i, Direction::Right), &mut stones, start)
+                        return find_loops(
+                            &matrix,
+                            (x, i, Direction::Right),
+                            &mut stones,
+                            start,
+                            &tx,
+                        )
                     }
                     _ => {
-                        if !stones.contains(&(x, i - 1)) && true {
+                        if !stones.contains(&(x, i - 1)) {
+                            let (matrix_cloned, tx_cloned) = (matrix.clone(), tx.clone());
+                            thread::spawn(move || {
+                                tx_cloned
+                                    .clone()
+                                    .send(is_loop(
+                                        &set_stone(&matrix_cloned, (x, i - 1)),
+                                        start,
+                                        &mut HashSet::<(usize, usize, Direction)>::new(),
+                                    ))
+                                    .unwrap()
+                            });
                             stones.insert((x, i - 1));
-                            count += 1;
                         }
                     }
                 }
             }
-            // Reached an end
-            return count;
         }
         Direction::Right => {
             // Walk until you can't no more
             for i in x..width - 1 {
                 match matrix.get(y).unwrap().get(i + 1).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (i, y, Direction::Bottom), &mut stones, start)
+                        return find_loops(
+                            &matrix,
+                            (i, y, Direction::Bottom),
+                            &mut stones,
+                            start,
+                            &tx,
+                        )
                     }
                     _ => {
-                        if !stones.contains(&(i + 1, y))
-                            && is_loop(
-                                &set_stone(&matrix, (i + 1, y)),
-                                start,
-                                &mut HashSet::<(usize, usize, Direction)>::new(),
-                            )
-                        {
+                        if !stones.contains(&(i + 1, y)) {
+                            let (matrix_cloned, tx_cloned) = (matrix.clone(), tx.clone());
+                            thread::spawn(move || {
+                                tx_cloned
+                                    .clone()
+                                    .send(is_loop(
+                                        &set_stone(&matrix_cloned, (i + 1, y)),
+                                        start,
+                                        &mut HashSet::<(usize, usize, Direction)>::new(),
+                                    ))
+                                    .unwrap()
+                            });
                             stones.insert((i + 1, y));
-                            count += 1;
                         }
                     }
                 }
             }
-            // Reached an end
-            return count;
         }
         Direction::Bottom => {
             // Walk until you can't no more
             for i in y..height - 1 {
                 match matrix.get(i + 1).unwrap().get(x).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (x, i, Direction::Left), &mut stones, start)
+                        return find_loops(
+                            &matrix,
+                            (x, i, Direction::Left),
+                            &mut stones,
+                            start,
+                            &tx,
+                        )
                     }
                     _ => {
-                        if !stones.contains(&(x, i + 1))
-                            && is_loop(
-                                &set_stone(&matrix, (x, i + 1)),
-                                start,
-                                &mut HashSet::<(usize, usize, Direction)>::new(),
-                            )
-                        {
+                        if !stones.contains(&(x, i + 1)) {
+                            let (matrix_cloned, tx_cloned) = (matrix.clone(), tx.clone());
+                            thread::spawn(move || {
+                                tx_cloned
+                                    .clone()
+                                    .send(is_loop(
+                                        &set_stone(&matrix_cloned, (x, i + 1)),
+                                        start,
+                                        &mut HashSet::<(usize, usize, Direction)>::new(),
+                                    ))
+                                    .unwrap()
+                            });
                             stones.insert((x, i + 1));
-                            count += 1;
                         }
                     }
                 }
             }
-            // Reached an end
-            return count;
         }
         Direction::Left => {
             // Walk until you can't no more
             for i in (1..x + 1).rev() {
                 match matrix.get(y).unwrap().get(i - 1).unwrap() {
                     '#' => {
-                        return count
-                            + find_loops(&matrix, (i, y, Direction::Top), &mut stones, start)
+                        return find_loops(&matrix, (i, y, Direction::Top), &mut stones, start, &tx)
                     }
                     _ => {
-                        if !stones.contains(&(i - 1, y))
-                            && is_loop(
-                                &set_stone(&matrix, (i - 1, y)),
-                                start,
-                                &mut HashSet::<(usize, usize, Direction)>::new(),
-                            )
-                        {
+                        if !stones.contains(&(i - 1, y)) {
+                            let (matrix_cloned, tx_cloned) = (matrix.clone(), tx.clone());
+                            thread::spawn(move || {
+                                tx_cloned
+                                    .send(is_loop(
+                                        &set_stone(&matrix_cloned, (i - 1, y)),
+                                        start,
+                                        &mut HashSet::<(usize, usize, Direction)>::new(),
+                                    ))
+                                    .unwrap()
+                            });
                             stones.insert((i - 1, y));
-                            count += 1;
                         }
                     }
                 }
             }
-            // Reached an end
-            return count;
         }
     }
 }
