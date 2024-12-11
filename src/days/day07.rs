@@ -4,6 +4,8 @@ use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 
+use crate::utils::runner::parallelize;
+
 static INPUT_FILE_PATH: &str = "inputs/day07.txt";
 
 // The output is wrapped in a Result to allow matching on errors.
@@ -20,15 +22,12 @@ fn part1(path: &str) -> i64 {
     let add = |a, b| a + b;
     let mul = |a, b| a * b;
     if let Ok(lines) = read_lines(path) {
-        let (tx, rx): (Sender<i64>, Receiver<i64>) = mpsc::channel();
-        for line in lines.flatten() {
-            let tx_child = tx.clone();
-            thread::spawn(move || {
-                tx_child.send(compute(&line, &[add, mul].to_vec())).unwrap();
-            });
-        }
-        drop(tx);
-        return rx.iter().reduce(|prev, next| prev + next).unwrap();
+        return parallelize(
+            lines
+                .flatten()
+                .map(|line| return move || compute(&line, &[add, mul].to_vec()))
+                .collect(),
+        );
     }
     return -1;
 }
@@ -38,17 +37,12 @@ fn part2(path: &str) -> i64 {
     let mul = |a, b| a * b;
     let or = |a, b| format!("{}{}", a, b).parse::<i64>().unwrap();
     if let Ok(lines) = read_lines(path) {
-        let (tx, rx): (Sender<i64>, Receiver<i64>) = mpsc::channel();
-        for line in lines.flatten() {
-            let tx_child = tx.clone();
-            thread::spawn(move || {
-                tx_child
-                    .send(compute(&line, &[add, mul, or].to_vec()))
-                    .unwrap();
-            });
-        }
-        drop(tx);
-        return rx.iter().reduce(|prev, next| prev + next).unwrap();
+        return parallelize(
+            lines
+                .flatten()
+                .map(|line| return move || compute(&line, &[add, mul, or].to_vec()))
+                .collect(),
+        );
     }
     return -1;
 }
