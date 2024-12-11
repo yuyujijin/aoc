@@ -17,8 +17,6 @@ where
 fn part1(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         // Do something...
-    } else {
-        return -1;
     }
     return -1;
 }
@@ -26,8 +24,6 @@ fn part1(path: &str) -> i64 {
 fn part2(path: &str) -> i64 {
     if let Ok(lines) = read_lines(path) {
         // Do something...
-    } else {
-        return -1;
     }
     return -1;
 }
