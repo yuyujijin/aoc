@@ -3,7 +3,7 @@ mod utils;
 use std::time::Instant;
 
 use clap::Parser;
-use days::{day01, day02, day03, day04, day05, day06, day07, day08, day09, day10};
+use days::{day01, day02, day03, day04, day05, day06, day07, day08, day09, day10, day11};
 
 /// Request a day to run
 #[derive(Parser)]
@@ -24,6 +24,7 @@ fn get_day_solver(day: i64) -> fn(i64) -> i64 {
         8 => day08::solve,
         9 => day09::solve,
         10 => day10::solve,
+        11 => day11::solve,
         _ => unimplemented!(),
     }
 }
