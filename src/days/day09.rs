@@ -1,5 +1,3 @@
-use core::panic;
-use std::f32::RADIX;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -180,7 +178,7 @@ fn block_checksum(compacted: &Vec<Block>) -> usize {
     let mut index: usize = 0;
     compacted
         .iter()
-        .map(|(block)| match block {
+        .map(|block| match block {
             Block::File(size, file_index) => {
                 // Iterate on block to calculate its full size
                 let value = (index..index + size)

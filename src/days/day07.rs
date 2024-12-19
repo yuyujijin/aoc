@@ -1,8 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::sync::mpsc::{self, Receiver, Sender};
-use std::thread;
 
 use crate::utils::runner::parallelize;
 
